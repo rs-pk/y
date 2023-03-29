@@ -1,0 +1,44 @@
+# This job creates all the resources of the base infrastructure.
+#
+# The following resources will be created and configured:
+#
+#   * Azure Monitoring:
+#     * Application Insights
+#     * Log Analytics
+#   * Virtual network and subnets
+#   * Key Vault
+#   * Container Registry
+#   * Data Lake Storage (Gen2)
+#   * Application Gateway
+#
+# Commented out CKAN and AG per ticket 6205.
+# Not removing them since CKAN could be commissioned at a later time.
+#
+---
+parameters:
+  - name: environment
+    type: string
+  - name: resourceGroup
+    type: string
+  - name: location
+    type: string
+  - name: virtualNetworkName
+    type: string
+
+jobs:
+  - deployment: deployment
+    environment: ${{ parameters.environment }}
+    pool:
+      vmImage: ubuntu-latest
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+
+            - template: ./build.yml
+              parameters:
+                resourceGroupName: ${{ parameters.resourceGroup }}
+                location: ${{ parameters.location }}
+                virtualNetworkName: ${{ parameters.virtualNetworkName }}
+

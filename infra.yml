@@ -1,0 +1,54 @@
+# This is the main pipeline for World Health Data Hub platform infrastructure, and deploys:
+#
+#   * The base infrastructure
+#   * Azure Logic App for sending email notifications from Data Factory
+#
+# Note: After provisioning the base infrastructure, the recommended next step is to run the malware detection setup
+# pipeline (defined by the create-malware-detection-setup.yml file).
+#
+---
+trigger:
+  - none
+
+variables:
+  resourceGroup: $resourceGroup
+  location: $location
+  environment: $env
+  virtualNetworkName: $vnet
+
+
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isDev: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')]
+  isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
+
+stages:
+
+  - stage: dev
+    condition: and(succeeded(), eq(variables.isDev, true)) 
+    jobs:
+      - template: ./jobs.yml
+        parameters:
+          environment: dev
+          resourceGroup: ${{ variables.resourceGroup }}
+          location: ${{ variables.location }}
+          virtualNetworkName: ${{ variables.virtualNetworkName }}
+
+  - stage: qa
+    condition: and(succeeded(), eq(variables.isMain, true)) 
+    jobs:
+      - template: ./jobs.yml
+        parameters:
+          environment: qa
+          resourceGroup: ${{ variables.resourceGroup }}
+          location: ${{ variables.location }}
+          virtualNetworkName: ${{ variables.virtualNetworkName }}
+
+  - stage: prod
+    condition: and(succeeded(), eq(variables.isProd, true))
+    jobs:
+      - template: ./jobs.yml
+        parameters:
+          environment: prod
+          resourceGroup: ${{ variables.resourceGroup }}
+          location: ${{ variables.location }}
+          virtualNetworkName: ${{ variables.virtualNetworkName }}

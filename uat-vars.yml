@@ -1,0 +1,8 @@
+# Variables for the development environment
+# Commented out CKAN related variables per ticket 6205
+---
+variables:
+  resourceGroup: ${{variables.resourceGroup}}
+  location: ${{variables.location}}
+  environment: ${{variables.env}}
+  virtualNetworkName: ${{ ${{variables.vnet}}}}

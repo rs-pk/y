@@ -1,0 +1,79 @@
+# pool: 4labs-aks-vsts-agentpool
+
+# variables:
+#   - group: artifactory
+#   - name: INITIAL_VERSION
+#     value: "0.0.1"
+
+steps:
+  - script: |
+      npm install
+    displayName: "Install npm packages"
+
+
+  # - script: |
+  #     npm run lint
+  #   displayName: "Check Modules and Code Quality"
+
+  # - script: |
+  #     npm run build
+  #   displayName: "Building project"
+
+  # - bash: |
+  #     newestReleaseTag=$(git tag -l release-* --sort=-creatordate --format='%(refname:short)'| head -n 1)
+  #     echo "##vso[task.setvariable variable=version]$(INITIAL_VERSION)"
+  #     echo "Version set to initial value $(INITIAL_VERSION)"
+  #     if [ -n "$newestReleaseTag" ]
+  #     then
+  #       regex='release-([0-9]+).([0-9]+).([0-9]+)'
+  #       [[ $newestReleaseTag =~ $regex ]]
+  #       incrementValue=$((${BASH_REMATCH[3]}+1))
+  #       tmpVersion="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${incrementValue}"
+  #       echo "##vso[task.setvariable variable=version]$tmpVersion"
+  #       echo "Version set to $tmpVersion"
+  #     fi
+  #   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  #   displayName: "Set variable with package version"
+
+  # - bash: |
+  #     tmpSnapshotTag="$(version)-SNAPSHOT-$(Build.BuildId)"
+  #     echo "##vso[task.setvariable variable=snapshotTag]$tmpSnapshotTag"
+  #     echo "Tag for snapshot set to $tmpSnapshotTag"
+  #   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  #   displayName: "Set variable with tag for snapshot"
+
+  # - script: |
+  #     npm run build
+  #   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  #   displayName: "Build package"
+
+  # - task: Docker@2
+  #   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  #   inputs:
+  #     repository: $(ARTIFACTORY_DOCKER_REGISTRY)/n4b-web-ui2
+  #     command: build
+  #     Dockerfile: ./Dockerfile
+  #     arguments: --rm
+  #     tags: |
+  #       latest
+  #       $(snapshotTag)
+  #   displayName: Build and tag docker image
+
+  # - task: Docker@2
+  #   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  #   inputs:
+  #     command: login
+  #     containerRegistry: $(ARTIFACTORY_DOCKER_REGISTRY_NAME)
+  #   displayName: Login to $(ARTIFACTORY_DOCKER_REGISTRY_NAME) docker registry
+
+  # - task: Docker@2
+  #   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  #   inputs:
+  #     containerRegistry: $(ARTIFACTORY_DOCKER_REGISTRY_NAME)
+  #     repository: n4b-web-ui2
+  #     command: push
+  #     tags: |
+  #       latest
+  #       $(snapshotTag)
+  #   displayName: Push image to $(ARTIFACTORY_DOCKER_REGISTRY_NAME) docker registry
+
